@@ -13,14 +13,6 @@ const (
 	GetGroup uint = iota
 )
 
-type Message struct {
-	Action            uint
-	Result            uint
-	ShieldID, PointId string
-	Out               chan *Message
-	Body              interface{}
-}
-
 type Storage struct {
 	sync.RWMutex
 
@@ -54,21 +46,6 @@ func StopSingleton() {
 	}
 	// TODO add deleting shields and points
 	Singleton = nil
-}
-
-func newMessage(Action uint, ShieldID, PointId string, Body ...interface{}) *Message {
-	mes := &Message{
-		Action:   Action,
-		ShieldID: ShieldID,
-		PointId:  PointId,
-		Out:      make(chan *Message, 1),
-	}
-
-	if len(Body) > 0 {
-		mes.Body = Body
-	}
-
-	return mes
 }
 
 func (s *Storage) _start() {

@@ -103,9 +103,13 @@ func Get(shieldID, pointID string) (interface{}, error) {
 	return Singleton.Get(shieldID, pointID)
 }
 
-func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
+func GetMes(shieldID, pointID string) (interface{}, error) {
+	return Singleton.GetMes(shieldID, pointID)
+}
 
-	if err := _checkID("Get", shieldID, pointID); err != nil {
+func (s *Storage) GetMes(shieldID, pointID string) (*Message, error) {
+
+	if err := _checkID("GetMes", shieldID, pointID); err != nil {
 		return nil, err
 	}
 
@@ -114,14 +118,24 @@ func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
 
 	mesFrom, ok := <-mesTo.Out
 	if !ok {
-		return nil, iotaToError(InternalError, "Get")
+		return nil, iotaToError(InternalError, "GetMes")
 	}
 
 	if mesFrom.Result != Success {
-		return nil, iotaToError(mesFrom.Result, "Get")
+		return nil, iotaToError(mesFrom.Result, "GetMes")
 	}
 
-	return mesFrom.Result, nil
+	return mesFrom, nil
+}
+
+func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
+
+	mes, err := s.GetMes(shieldID, pointID)
+	if err != nil {
+		return nil, err
+	}
+
+	return mes.Body, nil
 }
 
 // Internal function. _getPoint - returns one point if exists
