@@ -216,3 +216,29 @@ func (s *StorageTestsSuite) Test_Get_Error(c *C) {
 	c.Assert(res, NotNil)
 	c.Assert(body, IsNil)
 }
+
+func (s *StorageTestsSuite) Test_All(c *C) {
+	c.Skip("Not now")
+	st := New()
+
+	c.Assert(st.Shields["ShieldID"], IsNil)
+
+	err := st.AddShield("ShieldID", "bla-bla-bla-1")
+	c.Assert(err, IsNil)
+
+	st.Set("ShieldID", "PointID-1", "bla-bla-bla-1")
+	st.Set("ShieldID", "PointID-2", "bla-bla-bla-2")
+	st.Set("ShieldID", "PointID-3", "bla-bla-bla-3")
+
+	c.Assert(len(st.Shields["ShieldID"].List), Equals, 3)
+
+	all, res := st.All("ShieldID")
+
+	c.Assert(all, NotNil)
+	c.Assert(res, IsNil)
+	c.Assert(len(all), Equals, 3)
+
+	str, ok := all["PointID-2"].(string)
+	c.Assert(ok, Equals, true)
+	c.Assert(str, Equals, "bla-bla-bla-2")
+}

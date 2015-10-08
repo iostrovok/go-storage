@@ -14,6 +14,7 @@ type Message struct {
 	ShieldID, PointId string
 	Out               chan *Message
 	Body              interface{}
+	All               map[string]interface{}
 }
 
 func newMessage(Action uint, ShieldID, PointId string, Body ...interface{}) *Message {
@@ -23,6 +24,7 @@ func newMessage(Action uint, ShieldID, PointId string, Body ...interface{}) *Mes
 		ShieldID: ShieldID,
 		PointId:  PointId,
 		Out:      make(chan *Message, 1),
+		All:      map[string]interface{}{},
 	}
 
 	if len(Body) > 0 {

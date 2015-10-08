@@ -157,8 +157,8 @@ func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
 // Internal function. _getPoint - returns one point if exists
 func (s *Shield) _getPoint(pointID string) (interface{}, uint) {
 
-	s.Lock()
-	defer s.Unlock()
+	s.RLock()
+	defer s.RUnlock()
 
 	point, ok := s.List[pointID]
 	if !ok {
@@ -166,4 +166,48 @@ func (s *Shield) _getPoint(pointID string) (interface{}, uint) {
 	}
 
 	return point.Body, Success
+}
+
+// All - returns one points from the shield
+func All(shieldID string) (map[string]interface{}, error) {
+	return Singleton.All(shieldID)
+}
+
+func (s *Storage) All(shieldID string) (map[string]interface{}, error) {
+
+	if s.IsDebug {
+		log.Printf("All. shieldID %s\n", shieldID)
+	}
+
+	if shieldID == "" {
+		return nil, iotaToError(BadShieldID, "All")
+	}
+
+	mesTo := newMessage(AllPoints, shieldID, "")
+	s.In <- mesTo
+
+	mesFrom, ok := <-mesTo.Out
+	if !ok {
+		return nil, iotaToError(InternalError, "All")
+	}
+
+	if mesFrom.Result != Success {
+		return nil, iotaToError(mesFrom.Result, "All")
+	}
+
+	return mesFrom.All, nil
+}
+
+// Internal function. _getAllPoints - returns one points from the shield
+func (s *Shield) _getAllPoints() (map[string]interface{}, uint) {
+
+	s.RLock()
+	defer s.RUnlock()
+
+	out := map[string]interface{}{}
+	for pointID, point := range s.List {
+		out[pointID] = point.Body
+	}
+
+	return out, Success
 }

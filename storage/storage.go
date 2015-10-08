@@ -12,6 +12,8 @@ const (
 	DelGroup uint = iota
 	GetPoint uint = iota
 	GetGroup uint = iota
+
+	AllPoints uint = iota
 )
 
 type Storage struct {
@@ -49,10 +51,12 @@ func New() *Storage {
 	s.PointHooks = map[uint][]HookPointFunc{}
 	s.ShieldHooks = map[uint][]HookShieldFunc{}
 
+	s.PointHooks[AllPoints] = []HookPointFunc{}
 	s.PointHooks[AddPoint] = []HookPointFunc{}
 	s.PointHooks[DelPoint] = []HookPointFunc{}
 	s.PointHooks[GetPoint] = []HookPointFunc{}
 
+	s.ShieldHooks[AllPoints] = []HookShieldFunc{}
 	s.ShieldHooks[AddGroup] = []HookShieldFunc{}
 	s.ShieldHooks[DelGroup] = []HookShieldFunc{}
 	s.ShieldHooks[GetGroup] = []HookShieldFunc{}
@@ -96,13 +100,12 @@ func (s *Storage) OneAct(mes *Message) {
 	}
 
 	switch mes.Action {
-	case AddPoint, DelPoint, GetPoint:
+	case AddPoint, DelPoint, GetPoint, AllPoints:
 
 		shield, find := s._getShield(mes)
 
-		s._pointHookExe(mes.Action, shield, mes)
-
 		if find {
+			s._pointHookExe(mes.Action, shield, mes)
 			shield.In <- mes
 		}
 

@@ -171,6 +171,8 @@ func (s *Shield) _oneAct(mes *Message) {
 		mes.Result = s._delPoint(mes.PointId)
 	case GetPoint:
 		mes.Body, mes.Result = s._getPoint(mes.PointId)
+	case AllPoints:
+		mes.All, mes.Result = s._getAllPoints()
 	default:
 		mes.Result = BadAction
 	}
