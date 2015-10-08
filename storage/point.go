@@ -1,7 +1,7 @@
 package storage
 
 import (
-//"fmt"
+	"log"
 )
 
 type Point struct {
@@ -37,6 +37,10 @@ func Set(shieldID, pointID string, Body interface{}) error {
 
 func (s *Storage) Set(shieldID, pointID string, Body interface{}) error {
 
+	if s.IsDebug {
+		log.Printf("Set. shieldID: %s, pointID: %s\n", shieldID, pointID)
+	}
+
 	if err := _checkID("Set", shieldID, pointID); err != nil {
 		return err
 	}
@@ -70,6 +74,10 @@ func Del(shieldID, pointID string) error {
 
 // Del - deletes one point if exists with channal interface
 func (s *Storage) Del(shieldID, pointID string) error {
+
+	if s.IsDebug {
+		log.Printf("Del. shieldID: %s, pointID: %s\n", shieldID, pointID)
+	}
 
 	if err := _checkID("Del", shieldID, pointID); err != nil {
 		return err
@@ -109,6 +117,10 @@ func GetMes(shieldID, pointID string) (interface{}, error) {
 
 func (s *Storage) GetMes(shieldID, pointID string) (*Message, error) {
 
+	if s.IsDebug {
+		log.Printf("GetMes. shieldID: %s, pointID: %s\n", shieldID, pointID)
+	}
+
 	if err := _checkID("GetMes", shieldID, pointID); err != nil {
 		return nil, err
 	}
@@ -129,6 +141,10 @@ func (s *Storage) GetMes(shieldID, pointID string) (*Message, error) {
 }
 
 func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
+
+	if s.IsDebug {
+		log.Printf("Get. shieldID: %s, pointID: %s\n", shieldID, pointID)
+	}
 
 	mes, err := s.GetMes(shieldID, pointID)
 	if err != nil {

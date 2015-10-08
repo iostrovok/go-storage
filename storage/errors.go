@@ -5,40 +5,56 @@ import (
 )
 
 const (
-	BadPointID     uint = iota
-	BadShieldID    uint = iota
-	InternalError  uint = iota
-	NotFoundPoint  uint = iota
-	NotFoundShield uint = iota
-	ShieldExists   uint = iota
-	Success        uint = iota
-	BadAction      uint = iota
+	BadAction       uint = iota
+	BadPointID      uint = iota
+	BadShieldID     uint = iota
+	HookErrorPoint  uint = iota
+	HookErrorShield uint = iota
+	InternalError   uint = iota
+	NotFoundPoint   uint = iota
+	NotFoundShield  uint = iota
+	ShieldExists    uint = iota
+	Success         uint = iota
 )
 
 func iotaToError(code uint, prefixs ...string) error {
 
-	prefix := ""
-	if len(prefixs) > 0 {
-		prefix = prefixs[0] + ". "
-	}
+	errorLine := ""
 
 	switch code {
 	case Success:
 		return nil
 	case InternalError:
-		return errors.New(prefix + "Internal error")
+		errorLine = "Internal error"
 	case NotFoundShield:
-		return errors.New(prefix + "Shield not found")
+		errorLine = "Shield not found"
 	case NotFoundPoint:
-		return errors.New(prefix + "Point not found")
+		errorLine = "Point not found"
 	case BadShieldID:
-		return errors.New(prefix + "Shield not found. Bad Shield ID.")
+		errorLine = "Shield not found. Bad Shield ID."
 	case BadPointID:
-		return errors.New(prefix + "Point not found. Bad point ID.")
+		errorLine = "Point not found. Bad point ID."
 	case ShieldExists:
-		return errors.New(prefix + "Shield Exists")
+		errorLine = "Shield Exists"
 	case BadAction:
-		return errors.New(prefix + "Action not found")
+		errorLine = "Action not found"
+	case HookErrorShield:
+		errorLine = "Runtime hook shield error"
+	case HookErrorPoint:
+		errorLine = "Runtime hook point error"
+	default:
+		errorLine = " same error....."
 	}
-	return errors.New(prefix + " same error.....")
+
+	prefix := ""
+	if len(prefixs) > 0 {
+		prefix = prefixs[0] + " "
+	}
+
+	postfix := ""
+	if len(prefixs) > 1 {
+		postfix = " " + prefixs[1]
+	}
+
+	return errors.New(prefix + errorLine + postfix)
 }

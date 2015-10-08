@@ -18,14 +18,12 @@ func (s *StorageTestsSuite) Test_New(c *C) {
 	c.Skip("Not now")
 	st := New()
 	c.Assert(st, NotNil)
-	//c.Assert(check_array_diff(r.comp, res0), IsNil)
 }
 
 func (s *StorageTestsSuite) Test_newMessage(c *C) {
 	c.Skip("Not now")
 	m := newMessage(AddGroup, "ShieldID", "PointId")
 	c.Assert(m, NotNil)
-	//c.Assert(check_array_diff(r.comp, res0), IsNil)
 }
 
 func (s *StorageTestsSuite) Test__addShield(c *C) {
@@ -43,7 +41,7 @@ func (s *StorageTestsSuite) Test_AddShield(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(st.Shields["ShieldID"], NotNil)
@@ -52,7 +50,7 @@ func (s *StorageTestsSuite) Test_AddShield(c *C) {
 func (s *StorageTestsSuite) Test_AddShield_Empty(c *C) {
 	c.Skip("Not now")
 	st := New()
-	err := st.AddShield("")
+	err := st.AddShield("", "bla-bla-bla")
 	c.Assert(err, NotNil)
 }
 
@@ -82,7 +80,7 @@ func (s *StorageTestsSuite) Test_DelShield(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(st.Shields["ShieldID"], NotNil)
@@ -98,7 +96,7 @@ func (s *StorageTestsSuite) Test__setPoint(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(st.Shields["ShieldID"], NotNil)
@@ -114,7 +112,7 @@ func (s *StorageTestsSuite) Test_Set(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	st.Set("ShieldID", "PointID", "asdsad")
@@ -128,7 +126,7 @@ func (s *StorageTestsSuite) Test__delPoint(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(st.Shields["ShieldID"], NotNil)
@@ -148,7 +146,7 @@ func (s *StorageTestsSuite) Test_Del(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	st.Set("ShieldID", "PointID", "asdsad")
@@ -166,7 +164,7 @@ func (s *StorageTestsSuite) Test__getPoint(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(st.Shields["ShieldID"], NotNil)
@@ -187,7 +185,7 @@ func (s *StorageTestsSuite) Test_Get(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	st.Set("ShieldID", "PointID", "asdsad")
@@ -206,7 +204,7 @@ func (s *StorageTestsSuite) Test_Get_Error(c *C) {
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
 
-	err := st.AddShield("ShieldID")
+	err := st.AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	st.Set("ShieldID", "PointID", "asdsad")

@@ -1,7 +1,7 @@
 package storage
 
 import (
-	//"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -13,14 +13,16 @@ type Shield struct {
 	LastTime time.Time
 	List     map[string]*Point
 	In       chan *Message
+	Body     interface{}
 }
 
-func newShields(shieldID string) *Shield {
+func newShields(shieldID string, Body interface{}) *Shield {
 	s := &Shield{
 		ID:       shieldID,
 		LastTime: time.Now(),
 		List:     map[string]*Point{},
 		In:       make(chan *Message, 100),
+		Body:     Body,
 	}
 
 	go s._Start()
@@ -30,17 +32,21 @@ func newShields(shieldID string) *Shield {
 
 /* Shields action */
 // AddShield - adds new shield
-func AddShield(shieldID string) error {
-	return Singleton.AddShield(shieldID)
+func AddShield(shieldID string, Body interface{}) error {
+	return Singleton.AddShield(shieldID, Body)
 }
 
-func (s *Storage) AddShield(shieldID string) error {
+func (s *Storage) AddShield(shieldID string, Body interface{}) error {
+
+	if s.IsDebug {
+		log.Printf("AddShield. shieldID %s\n", shieldID)
+	}
 
 	if shieldID == "" {
 		return iotaToError(BadShieldID, "AddShield")
 	}
 
-	mesTo := newMessage(AddGroup, shieldID, "")
+	mesTo := newMessage(AddGroup, shieldID, "", Body)
 	s.In <- mesTo
 
 	mesFrom, ok := <-mesTo.Out
@@ -50,21 +56,83 @@ func (s *Storage) AddShield(shieldID string) error {
 	return iotaToError(mesFrom.Result, "AddShield")
 }
 
+func (s *Storage) _shieldHookExe(Action uint, mes *Message) bool {
+
+	if s.IsDebug {
+		log.Printf("_shieldHookExe. Action: %d.\n", Action)
+	}
+
+	for _, f := range s.ShieldHooks[Action] {
+		res, err := f(mes.Body)
+		if err != nil {
+			mes.Result = HookErrorShield
+			mes.Out <- mes
+			return false
+		}
+		mes.Body = res
+	}
+	return true
+}
+
+func (s *Storage) _pointHookExe(Action uint, sh *Shield, mes *Message) bool {
+
+	if s.IsDebug {
+		log.Printf("_pointHookExe. Action: %d.\n", Action)
+	}
+
+	for _, f := range s.PointHooks[Action] {
+		shBody, mesBody, err := f(sh.Body, mes.Body)
+		if err != nil {
+			mes.Result = HookErrorPoint
+			mes.Out <- mes
+			return false
+		}
+		sh.Body = shBody
+		mes.Body = mesBody
+	}
+	return true
+}
+
 func (s *Storage) _addShield(mes *Message) {
 
 	s.Lock()
+
+	if !s._shieldHookExe(AddGroup, mes) {
+		return
+	}
 
 	_, find := s.Shields[mes.ShieldID]
 	if find {
 		mes.Result = ShieldExists
 	} else {
-		s.Shields[mes.ShieldID] = newShields(mes.ShieldID)
+		s.Shields[mes.ShieldID] = newShields(mes.ShieldID, mes.Body)
 		mes.Result = Success
-
 	}
 
 	s.Unlock()
 	mes.Out <- mes
+}
+
+// ExShield - checks existed shield
+func ExShield(shieldID string) bool {
+	return Singleton.ExShield(shieldID)
+}
+
+func (s *Storage) ExShield(shieldID string) bool {
+
+	if s.IsDebug {
+		log.Printf("ExShield. shieldID %s\n", shieldID)
+	}
+
+	if shieldID == "" {
+		return false
+	}
+
+	s.RLock()
+	_, find := s.Shields[shieldID]
+	s.RUnlock()
+
+	return find
 }
 
 // DelShield - deletes existed shield
@@ -73,6 +141,10 @@ func DelShield(shieldID string) error {
 }
 
 func (s *Storage) DelShield(shieldID string) error {
+
+	if s.IsDebug {
+		log.Printf("DelShield. shieldID %s\n", shieldID)
+	}
 
 	if shieldID == "" {
 		return iotaToError(BadShieldID, "DelShield")
@@ -91,6 +163,11 @@ func (s *Storage) DelShield(shieldID string) error {
 func (s *Storage) _delShield(mes *Message) {
 
 	s.Lock()
+
+	if !s._shieldHookExe(DelGroup, mes) {
+		return
+	}
+
 	_, find := s.Shields[mes.ShieldID]
 	if !find {
 		mes.Result = NotFoundShield
@@ -108,6 +185,9 @@ func (s *Storage) _delShield(mes *Message) {
 func (s *Storage) _getShield(mes *Message) (shield *Shield, find bool) {
 
 	s.RLock()
+	if !s._shieldHookExe(GetGroup, mes) {
+		return
+	}
 	shield, find = s.Shields[mes.ShieldID]
 	s.RUnlock()
 

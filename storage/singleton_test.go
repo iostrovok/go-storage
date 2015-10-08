@@ -33,7 +33,7 @@ func (s *StorageTestsSuite_Singleton) Test_AddShield_Singleton(c *C) {
 
 	StartSingleton()
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 	c.Assert(Singleton.Shields["ShieldID"], NotNil)
 }
@@ -41,7 +41,7 @@ func (s *StorageTestsSuite_Singleton) Test_AddShield_Singleton(c *C) {
 func (s *StorageTestsSuite_Singleton) Test_AddShield_Empty_Singleton(c *C) {
 	//c.Skip("Not now")
 	StartSingleton()
-	err := AddShield("")
+	err := AddShield("", "bla-bla-bla")
 	c.Assert(err, NotNil)
 }
 
@@ -60,7 +60,7 @@ func (s *StorageTestsSuite_Singleton) Test_DelShield_Singleton(c *C) {
 
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
 
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	c.Assert(Singleton.Shields["ShieldID"], NotNil)
@@ -77,7 +77,7 @@ func (s *StorageTestsSuite_Singleton) Test_Set_Singleton(c *C) {
 
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
 
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	Set("ShieldID", "PointID", "asdsad")
@@ -92,7 +92,7 @@ func (s *StorageTestsSuite_Singleton) Test_Del_Singleton(c *C) {
 
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
 
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	Set("ShieldID", "PointID", "asdsad")
@@ -111,7 +111,7 @@ func (s *StorageTestsSuite_Singleton) Test_Get_Singleton(c *C) {
 
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
 
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	Set("ShieldID", "PointID", "asdsad")
@@ -131,7 +131,7 @@ func (s *StorageTestsSuite_Singleton) Test_Get_Error_Singleton(c *C) {
 
 	c.Assert(Singleton.Shields["ShieldID"], IsNil)
 
-	err := AddShield("ShieldID")
+	err := AddShield("ShieldID", "bla-bla-bla")
 	c.Assert(err, IsNil)
 
 	Set("ShieldID", "PointID", "asdsad")
