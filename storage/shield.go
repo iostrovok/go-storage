@@ -56,43 +56,6 @@ func (s *Storage) AddShield(shieldID string, Body interface{}) error {
 	return iotaToError(mesFrom.Result, "AddShield")
 }
 
-func (s *Storage) _shieldHookExe(Action uint, mes *Message) bool {
-
-	if s.IsDebug {
-		log.Printf("_shieldHookExe. Action: %d.\n", Action)
-	}
-
-	for _, f := range s.ShieldHooks[Action] {
-		res, err := f(mes.Body)
-		if err != nil {
-			mes.Result = HookErrorShield
-			mes.Out <- mes
-			return false
-		}
-		mes.Body = res
-	}
-	return true
-}
-
-func (s *Storage) _pointHookExe(Action uint, sh *Shield, mes *Message) bool {
-
-	if s.IsDebug {
-		log.Printf("_pointHookExe. Action: %d.\n", Action)
-	}
-
-	for _, f := range s.PointHooks[Action] {
-		shBody, mesBody, err := f(sh.Body, mes.Body)
-		if err != nil {
-			mes.Result = HookErrorPoint
-			mes.Out <- mes
-			return false
-		}
-		sh.Body = shBody
-		mes.Body = mesBody
-	}
-	return true
-}
-
 func (s *Storage) _addShield(mes *Message) {
 
 	s.Lock()

@@ -14,9 +14,6 @@ const (
 	GetGroup uint = iota
 )
 
-type HookShieldFunc func(interface{}) (interface{}, error)
-type HookPointFunc func(interface{}, interface{}) (interface{}, interface{}, error)
-
 type Storage struct {
 	sync.RWMutex
 
@@ -41,22 +38,6 @@ func (s *Storage) Debug(d ...bool) {
 	} else {
 		s.IsDebug = d[0]
 	}
-}
-
-func HookPoint(act uint, f HookPointFunc) {
-	Singleton.HookPoint(act, f)
-}
-
-func HookShield(act uint, f HookShieldFunc) {
-	Singleton.HookShield(act, f)
-}
-
-func (s *Storage) HookPoint(act uint, f HookPointFunc) {
-	s.PointHooks[act] = append(s.PointHooks[act], f)
-}
-
-func (s *Storage) HookShield(act uint, f HookShieldFunc) {
-	s.ShieldHooks[act] = append(s.ShieldHooks[act], f)
 }
 
 func New() *Storage {
