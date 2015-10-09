@@ -203,6 +203,8 @@ func (s *Storage) _getShield(mes *Message) (shield *Shield, find bool) {
 
 func (s *Shield) _oneAct(mes *Message) {
 
+	s.LastTime = time.Now()
+
 	switch mes.Action {
 	case AddPoint:
 		mes.Result = s._setPoint(mes.PointId, mes.Body)
@@ -212,6 +214,8 @@ func (s *Shield) _oneAct(mes *Message) {
 		mes.Body, mes.Result = s._getPoint(mes.PointId)
 	case AllPoints:
 		mes.All, mes.Result = s._getAllPoints()
+	case UpdateTime:
+		// Nothing
 	default:
 		mes.Result = BadAction
 	}

@@ -16,6 +16,8 @@ const (
 
 	AllPoints uint = iota
 	Clean     uint = iota
+
+	UpdateTime uint = iota
 )
 
 type Storage struct {
@@ -152,6 +154,8 @@ func (s *Storage) OneAct(mes *Message) {
 			mes.Body = shield.Body
 			mes.Result = Success
 			mes.Out <- mes
+
+			shield.In <- newMessage(UpdateTime, "", "", "")
 		}
 
 	case AddGroup:

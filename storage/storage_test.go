@@ -286,7 +286,34 @@ func (s *StorageTestsSuite) Test_SetShieldTTL(c *C) {
 	st.SetShieldTTL(time.Millisecond * 500)
 	time.Sleep(time.Millisecond * 1000)
 
+	c.Assert(len(st.Shields), Equals, 0)
+}
+
+func (s *StorageTestsSuite) Test_SetShieldTTL_2(c *C) {
+	//c.Skip("Not now")
+	st := New()
+	st.SetShieldTTL(time.Minute)
+
+	c.Assert(st.Shields["ShieldID"], IsNil)
+
+	st.AddShield("ShieldID", "bla-bla-bla-1")
+	st.AddShield("ShieldID-2", "bla-bla-bla-1")
+	st.Set("ShieldID", "PointID-1", "bla-bla-bla-1")
+
+	c.Assert(len(st.Shields), Equals, 2)
+
+	st.SetShieldTTL(time.Millisecond * 500)
+
+	for i := 0; i < 17; i++ {
+		_, _ = st.Get("ShieldID", "PointID-1")
+		_, _ = st.GetShield("ShieldID-2")
+		time.Sleep(time.Millisecond * 100)
+		if i > 11 {
+			st.SetShieldTTL(time.Minute)
+		}
+	}
+
 	fmt.Printf("%+v\n", st.Shields)
 
-	c.Assert(len(st.Shields), Equals, 0)
+	c.Assert(len(st.Shields), Equals, 2)
 }
