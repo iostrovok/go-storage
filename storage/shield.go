@@ -30,6 +30,15 @@ func newShields(shieldID string, Body interface{}) *Shield {
 	return s
 }
 
+func _checkOneID(prefix, shieldID string) error {
+
+	if shieldID == "" {
+		return iotaToError(BadShieldID, prefix)
+	}
+
+	return nil
+}
+
 /* Shields action */
 // AddShield - adds new shield
 func AddShield(shieldID string, Body interface{}) error {
@@ -142,6 +151,36 @@ func (s *Storage) _delShield(mes *Message) {
 	s.Unlock()
 
 	mes.Out <- mes
+}
+
+// GetShield - returns data
+func GetShield(shieldID string) (interface{}, error) {
+	return Singleton.GetShield(shieldID)
+}
+
+func (s *Storage) GetShield(shieldID string) (interface{}, error) {
+
+	if s.IsDebug {
+		log.Printf("GetShield. shieldID: %s\n", shieldID)
+	}
+
+	if err := _checkOneID("GetMes", shieldID); err != nil {
+		return nil, err
+	}
+
+	mesTo := newMessage(GetGroup, shieldID, "")
+	s.In <- mesTo
+
+	mesFrom, ok := <-mesTo.Out
+	if !ok {
+		return nil, iotaToError(InternalError, "GetShield")
+	}
+
+	if mesFrom.Result != Success {
+		return nil, iotaToError(mesFrom.Result, "GetShield")
+	}
+
+	return mesFrom.Body, nil
 }
 
 // _getShield - returns exited shield

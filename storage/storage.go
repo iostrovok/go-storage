@@ -109,6 +109,16 @@ func (s *Storage) OneAct(mes *Message) {
 			shield.In <- mes
 		}
 
+	case GetGroup:
+
+		shield, find := s._getShield(mes)
+
+		if find {
+			mes.Body = shield.Body
+			mes.Result = Success
+			mes.Out <- mes
+		}
+
 	case AddGroup:
 		s._addShield(mes)
 	case DelGroup:

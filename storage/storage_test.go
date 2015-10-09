@@ -242,3 +242,26 @@ func (s *StorageTestsSuite) Test_All(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(str, Equals, "bla-bla-bla-2")
 }
+
+func (s *StorageTestsSuite) Test_GetShield(c *C) {
+	c.Skip("Not now")
+	st := New()
+
+	c.Assert(st.Shields["ShieldID"], IsNil)
+
+	err := st.AddShield("ShieldID", "bla-bla-bla")
+	c.Assert(err, IsNil)
+
+	st.Set("ShieldID", "PointID", "asdsad")
+
+	c.Assert(st.Shields["ShieldID"].List["PointID"], NotNil)
+
+	body, res := st.GetShield("ShieldID")
+	c.Assert(st.Shields["ShieldID"].List["PointID"], NotNil)
+	c.Assert(body, NotNil)
+	c.Assert(res, IsNil)
+
+	str, ok := body.(string)
+	c.Assert(ok, Equals, true)
+	c.Assert(str, Equals, "bla-bla-bla")
+}
