@@ -1,9 +1,10 @@
 package storage
 
 import (
-	//"fmt"
+	"fmt"
 	. "gopkg.in/check.v1"
 	"testing"
+	"time"
 )
 
 func TestStorage(t *testing.T) {
@@ -15,19 +16,19 @@ type StorageTestsSuite struct{}
 var _ = Suite(&StorageTestsSuite{})
 
 func (s *StorageTestsSuite) Test_New(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 	c.Assert(st, NotNil)
 }
 
 func (s *StorageTestsSuite) Test_newMessage(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	m := newMessage(AddGroup, "ShieldID", "PointId")
 	c.Assert(m, NotNil)
 }
 
 func (s *StorageTestsSuite) Test__addShield(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 	m := newMessage(AddGroup, "ShieldID", "")
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -36,7 +37,7 @@ func (s *StorageTestsSuite) Test__addShield(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_AddShield(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -48,14 +49,14 @@ func (s *StorageTestsSuite) Test_AddShield(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_AddShield_Empty(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 	err := st.AddShield("", "bla-bla-bla")
 	c.Assert(err, NotNil)
 }
 
 func (s *StorageTestsSuite) Test__delShield(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 	m := newMessage(AddGroup, "ShieldID", "")
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -68,14 +69,14 @@ func (s *StorageTestsSuite) Test__delShield(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_DelShield_Empty(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 	err := st.DelShield("")
 	c.Assert(err, NotNil)
 }
 
 func (s *StorageTestsSuite) Test_DelShield(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -91,7 +92,7 @@ func (s *StorageTestsSuite) Test_DelShield(c *C) {
 }
 
 func (s *StorageTestsSuite) Test__setPoint(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -107,7 +108,7 @@ func (s *StorageTestsSuite) Test__setPoint(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_Set(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -121,7 +122,7 @@ func (s *StorageTestsSuite) Test_Set(c *C) {
 }
 
 func (s *StorageTestsSuite) Test__delPoint(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -141,7 +142,7 @@ func (s *StorageTestsSuite) Test__delPoint(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_Del(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -159,7 +160,7 @@ func (s *StorageTestsSuite) Test_Del(c *C) {
 }
 
 func (s *StorageTestsSuite) Test__getPoint(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -180,7 +181,7 @@ func (s *StorageTestsSuite) Test__getPoint(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_Get(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -199,7 +200,7 @@ func (s *StorageTestsSuite) Test_Get(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_Get_Error(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -218,7 +219,7 @@ func (s *StorageTestsSuite) Test_Get_Error(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_All(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -244,7 +245,7 @@ func (s *StorageTestsSuite) Test_All(c *C) {
 }
 
 func (s *StorageTestsSuite) Test_GetShield(c *C) {
-	c.Skip("Not now")
+	//c.Skip("Not now")
 	st := New()
 
 	c.Assert(st.Shields["ShieldID"], IsNil)
@@ -264,4 +265,28 @@ func (s *StorageTestsSuite) Test_GetShield(c *C) {
 	str, ok := body.(string)
 	c.Assert(ok, Equals, true)
 	c.Assert(str, Equals, "bla-bla-bla")
+}
+
+func (s *StorageTestsSuite) Test_SetShieldTTL(c *C) {
+	//c.Skip("Not now")
+	st := New()
+	st.SetShieldTTL(time.Minute)
+
+	c.Assert(st.Shields["ShieldID"], IsNil)
+
+	st.AddShield("ShieldID", "bla-bla-bla-1")
+	st.AddShield("ShieldID-2", "bla-bla-bla-1")
+
+	st.Set("ShieldID", "PointID-1", "bla-bla-bla-1")
+	st.Set("ShieldID", "PointID-2", "bla-bla-bla-2")
+	st.Set("ShieldID-2", "PointID-3", "bla-bla-bla-3")
+
+	c.Assert(len(st.Shields), Equals, 2)
+
+	st.SetShieldTTL(time.Millisecond * 500)
+	time.Sleep(time.Millisecond * 1000)
+
+	fmt.Printf("%+v\n", st.Shields)
+
+	c.Assert(len(st.Shields), Equals, 0)
 }

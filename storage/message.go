@@ -1,8 +1,6 @@
 package storage
 
-import (
-	"fmt"
-)
+import ()
 
 func (m Message) GetBody() interface{} {
 	return m.Body
@@ -30,8 +28,6 @@ func newMessage(Action uint, ShieldID, PointId string, Body ...interface{}) *Mes
 	if len(Body) > 0 {
 		mes.Body = Body[0]
 	}
-
-	fmt.Printf("newMessage: mes.Body: %+v\n", mes.Body)
 
 	return mes
 }

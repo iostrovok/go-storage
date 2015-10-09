@@ -3,6 +3,7 @@ package storage
 import (
 	"log"
 	"sync"
+	"time"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 	GetGroup uint = iota
 
 	AllPoints uint = iota
+	Clean     uint = iota
 )
 
 type Storage struct {
@@ -26,6 +28,9 @@ type Storage struct {
 
 	Shields map[string]*Shield
 	In      chan *Message
+	TimerCh chan time.Duration
+
+	ShieldTTL time.Duration
 }
 
 var Singleton *Storage = nil
@@ -44,8 +49,10 @@ func (s *Storage) Debug(d ...bool) {
 
 func New() *Storage {
 	s := &Storage{
-		Shields: map[string]*Shield{},
-		In:      make(chan *Message, 1000),
+		Shields:   map[string]*Shield{},
+		In:        make(chan *Message, 1000),
+		TimerCh:   make(chan time.Duration, 10),
+		ShieldTTL: time.Minute,
 	}
 
 	s.PointHooks = map[uint][]HookPointFunc{}
@@ -62,6 +69,7 @@ func New() *Storage {
 	s.ShieldHooks[GetGroup] = []HookShieldFunc{}
 
 	go s._start()
+	go s._check_ttl()
 	return s
 }
 
@@ -91,6 +99,33 @@ func (s *Storage) _start() {
 			s.OneAct(mes)
 		}
 	}
+}
+
+func (s *Storage) _cleanShield() {
+
+	if s.IsDebug {
+		log.Printf("_cleanShield. %s\n")
+	}
+
+	n := time.Now().Add(-1 * s.ShieldTTL)
+	newShields := map[string]*Shield{}
+
+	s.Lock()
+
+	for key, shield := range s.Shields {
+		if n.After(shield.LastTime) {
+			continue
+		}
+		newShields[key] = shield
+	}
+
+	if s.IsDebug {
+		log.Printf("_cleanShield result: was: %d, now: %d\n", len(s.Shields), len(newShields))
+	}
+
+	s.Shields = newShields
+
+	s.Unlock()
 }
 
 func (s *Storage) OneAct(mes *Message) {
@@ -123,6 +158,8 @@ func (s *Storage) OneAct(mes *Message) {
 		s._addShield(mes)
 	case DelGroup:
 		s._delShield(mes)
+	case Clean:
+		s._cleanShield()
 	default:
 		mes.Result = BadAction
 		mes.Out <- mes
