@@ -175,9 +175,10 @@ func (s *StorageTestsSuite) Test__getPoint(c *C) {
 	c.Assert(st.Shields["ShieldID"].List["PointID"], NotNil)
 
 	body, res := st.Shields["ShieldID"]._getPoint("PointID")
+
 	c.Assert(st.Shields["ShieldID"].List["PointID"], NotNil)
 	c.Assert(body, NotNil)
-	c.Assert(res, Equals, Success)
+	c.Assert(res, Equals, true)
 }
 
 func (s *StorageTestsSuite) Test_Get(c *C) {
@@ -239,7 +240,7 @@ func (s *StorageTestsSuite) Test_All(c *C) {
 	c.Assert(res, IsNil)
 	c.Assert(len(all), Equals, 3)
 
-	str, ok := all["PointID-2"].(string)
+	str, ok := all["PointID-2"].Body.(string)
 	c.Assert(ok, Equals, true)
 	c.Assert(str, Equals, "bla-bla-bla-2")
 }

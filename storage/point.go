@@ -59,12 +59,22 @@ func (s *Storage) Set(shieldID, pointID string, Body interface{}) error {
 // Internal function. _setPoint - adds or updates point into group
 func (s *Shield) _setPoint(pointID string, Body interface{}) uint {
 
+	point := newPoint(pointID, Body)
+	result := HookErrorPoint
+
 	s.Lock()
 	defer s.Unlock()
 
-	s.List[pointID] = newPoint(pointID, Body)
+	shieldBody, pointBody, err := s._pointHookExe(AddPoint, point)
 
-	return Success
+	if err == nil {
+		result = Success
+		s.Body = shieldBody
+		point.Body = pointBody
+		s.List[pointID] = point
+	}
+
+	return result
 }
 
 // Del - deletes one point if exists with channal interface
@@ -155,25 +165,21 @@ func (s *Storage) Get(shieldID, pointID string) (interface{}, error) {
 }
 
 // Internal function. _getPoint - returns one point if exists
-func (s *Shield) _getPoint(pointID string) (interface{}, uint) {
+func (s *Shield) _getPoint(pointID string) (point *Point, find bool) {
 
 	s.RLock()
-	defer s.RUnlock()
+	point, find = s.List[pointID]
+	s.RUnlock()
 
-	point, ok := s.List[pointID]
-	if !ok {
-		return nil, NotFoundPoint
-	}
-
-	return point.Body, Success
+	return
 }
 
 // All - returns one points from the shield
-func All(shieldID string) (map[string]interface{}, error) {
+func All(shieldID string) (map[string]AllResult, error) {
 	return Singleton.All(shieldID)
 }
 
-func (s *Storage) All(shieldID string) (map[string]interface{}, error) {
+func (s *Storage) All(shieldID string) (map[string]AllResult, error) {
 
 	if s.IsDebug {
 		log.Printf("All. shieldID %s\n", shieldID)
@@ -199,15 +205,40 @@ func (s *Storage) All(shieldID string) (map[string]interface{}, error) {
 }
 
 // Internal function. _getAllPoints - returns one points from the shield
-func (s *Shield) _getAllPoints() (map[string]interface{}, uint) {
+func (s *Shield) _getAllPoints() (map[string]AllResult, uint) {
 
 	s.RLock()
 	defer s.RUnlock()
 
-	out := map[string]interface{}{}
+	out := map[string]AllResult{}
 	for pointID, point := range s.List {
-		out[pointID] = point.Body
+		_, pointBody, err := s._pointHookExe(AllPoints, point)
+		out[pointID] = AllResult{
+			Error: err,
+			Body:  pointBody,
+		}
 	}
 
 	return out, Success
+}
+
+func (s *Shield) _runEachFunc(f interface{}) uint {
+
+	// func(interface{}, interface{}) (bool, interface{})
+	fun, ok := f.(EachPointFunc)
+	if !ok {
+		return BadEachFunc
+	}
+
+	s.Lock()
+	defer s.Unlock()
+
+	for pointID, point := range s.List {
+		isUpdate, body := fun(s.Body, point.Body)
+		if isUpdate {
+			s.List[pointID].Body = body
+		}
+	}
+
+	return Success
 }

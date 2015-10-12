@@ -14,6 +14,8 @@ type Shield struct {
 	List     map[string]*Point
 	In       chan *Message
 	Body     interface{}
+
+	Hooks map[uint]map[string]HookPointFunc
 }
 
 func newShields(shieldID string, Body interface{}) *Shield {
@@ -23,7 +25,13 @@ func newShields(shieldID string, Body interface{}) *Shield {
 		List:     map[string]*Point{},
 		In:       make(chan *Message, 100),
 		Body:     Body,
+
+		Hooks: map[uint]map[string]HookPointFunc{},
 	}
+
+	s.Hooks[AllPoints] = map[string]HookPointFunc{}
+	s.Hooks[AddPoint] = map[string]HookPointFunc{}
+	s.Hooks[GetPoint] = map[string]HookPointFunc{}
 
 	go s._Start()
 
@@ -67,18 +75,21 @@ func (s *Storage) AddShield(shieldID string, Body interface{}) error {
 
 func (s *Storage) _addShield(mes *Message) {
 
-	s.Lock()
-
-	if !s._shieldHookExe(AddGroup, mes) {
-		return
+	if s.IsDebug {
+		log.Printf("_addShield. shieldID %s\n", mes.ShieldID)
 	}
 
+	s.Lock()
+
 	_, find := s.Shields[mes.ShieldID]
-	if find {
-		mes.Result = ShieldExists
-	} else {
-		s.Shields[mes.ShieldID] = newShields(mes.ShieldID, mes.Body)
-		mes.Result = Success
+	if !find {
+		shield := newShields(mes.ShieldID, mes.Body)
+
+		mes.Result, shield.Body = s._shieldHookExe(AddGroup, shield)
+
+		if mes.Result == Success {
+			s.Shields[mes.ShieldID] = shield
+		}
 	}
 
 	s.Unlock()
@@ -136,10 +147,6 @@ func (s *Storage) _delShield(mes *Message) {
 
 	s.Lock()
 
-	if !s._shieldHookExe(DelGroup, mes) {
-		return
-	}
-
 	_, find := s.Shields[mes.ShieldID]
 	if !find {
 		mes.Result = NotFoundShield
@@ -151,6 +158,36 @@ func (s *Storage) _delShield(mes *Message) {
 	s.Unlock()
 
 	mes.Out <- mes
+}
+
+// Ping - update last touch time in the shield
+func Each(shieldID string, f EachPointFunc) {
+	Singleton.Each(shieldID, f)
+}
+
+func (s *Storage) Each(shieldID string, f EachPointFunc) {
+
+	if s.IsDebug {
+		log.Printf("Ping. shieldID: %s\n", shieldID)
+	}
+
+	s.In <- newMessage(EachAct, shieldID, "", f)
+
+}
+
+// Ping - update last touch time in the shield
+func Ping(shieldID string) {
+	Singleton.Ping(shieldID)
+}
+
+func (s *Storage) Ping(shieldID string) {
+
+	if s.IsDebug {
+		log.Printf("Ping. shieldID: %s\n", shieldID)
+	}
+
+	s.In <- newMessage(UpdateTime, shieldID, "", "")
+
 }
 
 // GetShield - returns data
@@ -184,19 +221,11 @@ func (s *Storage) GetShield(shieldID string) (interface{}, error) {
 }
 
 // _getShield - returns exited shield
-func (s *Storage) _getShield(mes *Message) (shield *Shield, find bool) {
+func (s *Storage) _getShield(shieldID string) (shield *Shield, find bool) {
 
 	s.RLock()
-	if !s._shieldHookExe(GetGroup, mes) {
-		return
-	}
-	shield, find = s.Shields[mes.ShieldID]
+	shield, find = s.Shields[shieldID]
 	s.RUnlock()
-
-	if !find {
-		mes.Result = NotFoundShield
-		mes.Out <- mes
-	}
 
 	return
 }
@@ -209,13 +238,36 @@ func (s *Shield) _oneAct(mes *Message) {
 	case AddPoint:
 		mes.Result = s._setPoint(mes.PointId, mes.Body)
 	case DelPoint:
+		// No hook
 		mes.Result = s._delPoint(mes.PointId)
 	case GetPoint:
-		mes.Body, mes.Result = s._getPoint(mes.PointId)
+		point, find := s._getPoint(mes.PointId)
+
+		mes.Result = NotFoundShield
+
+		if find {
+			_, body, err := s._pointHookExe(GetPoint, point)
+			if err == nil {
+				mes.Body = body
+				mes.Result = Success
+			} else {
+				mes.Result = HookErrorPoint
+			}
+		}
+
 	case AllPoints:
 		mes.All, mes.Result = s._getAllPoints()
+	case EachAct:
+		mes.Result = s._runEachFunc(mes.Body)
 	case UpdateTime:
 		// Nothing
+		return
+
+	case AddHook:
+		mes.Result = s._addHook(mes)
+	case DelHook:
+		mes.Result = s._delHook(mes)
+
 	default:
 		mes.Result = BadAction
 	}

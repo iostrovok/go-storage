@@ -5,16 +5,21 @@ import (
 )
 
 const (
-	BadAction       uint = iota
-	BadPointID      uint = iota
-	BadShieldID     uint = iota
+	BadAction      uint = iota
+	BadPointID     uint = iota
+	BadShieldID    uint = iota
+	BadEachFunc    uint = iota
+	InternalError  uint = iota
+	NotFoundPoint  uint = iota
+	NotFoundShield uint = iota
+	ShieldExists   uint = iota
+	Success        uint = iota
+
+	HookKeyBad      uint = iota
+	HookFuncBad     uint = iota
+	HookErrorStruct uint = iota
 	HookErrorPoint  uint = iota
 	HookErrorShield uint = iota
-	InternalError   uint = iota
-	NotFoundPoint   uint = iota
-	NotFoundShield  uint = iota
-	ShieldExists    uint = iota
-	Success         uint = iota
 )
 
 func iotaToError(code uint, prefixs ...string) error {
@@ -42,6 +47,8 @@ func iotaToError(code uint, prefixs ...string) error {
 		errorLine = "Runtime hook shield error"
 	case HookErrorPoint:
 		errorLine = "Runtime hook point error"
+	case BadEachFunc:
+		errorLine = "'Each' func has wrong type"
 	default:
 		errorLine = " same error....."
 	}

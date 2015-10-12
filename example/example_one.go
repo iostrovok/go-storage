@@ -30,6 +30,19 @@ func GetUser(group_id, user_id string) *User {
 	return m1.(*User)
 }
 
+// support function
+func hook_func_shield(groupIn interface{}) (interface{}, error) {
+
+	_, ok_g := groupIn.(*Group)
+	if !ok_g {
+		return groupIn, errors.New("No group type")
+	}
+
+	fmt.Printf("!!!!!!!!!!!!!!!!!hook_add_user START. groupIn: %+v\n", groupIn)
+
+	return groupIn, nil
+}
+
 func hook_add_user(groupIn, userIn interface{}) (interface{}, interface{}, error) {
 
 	fmt.Printf("hook_add_user START. groupIn: %+v\n", groupIn)
@@ -54,7 +67,7 @@ func hook_add_user(groupIn, userIn interface{}) (interface{}, interface{}, error
 func main() {
 	st.StartSingleton()
 	st.Debug()
-	st.HookPoint(st.AddPoint, hook_add_user)
+	st.HookShield(st.AddGroup, hook_func_shield)
 
 	g := &Group{
 		ID:    "my-group-ID",
@@ -71,4 +84,9 @@ func main() {
 	copyUser := GetUser("gr-1", "point-1")
 
 	fmt.Printf("2. main. User: %+v\n", copyUser)
+
+	// Read user
+	copyGroup, err := st.GetShield("gr-1-wrong")
+	fmt.Printf("3. main. err: %+v\n", err)
+	fmt.Printf("4. main. copyGroup: %+v\n", copyGroup)
 }

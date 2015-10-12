@@ -15,7 +15,7 @@ type StorageTestsSuite_Singleton struct{}
 var _ = Suite(&StorageTestsSuite_Singleton{})
 
 func (s *StorageTestsSuite_Singleton) Test_StartSingleton(c *C) {
-	// c.Skip("Not now")
+	//c.Skip("Not now")
 	StartSingleton()
 	c.Assert(Singleton, NotNil)
 }

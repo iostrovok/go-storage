@@ -18,6 +18,10 @@ const (
 	Clean     uint = iota
 
 	UpdateTime uint = iota
+	EachAct    uint = iota
+
+	DelHook uint = iota
+	AddHook uint = iota
 )
 
 type Storage struct {
@@ -25,7 +29,6 @@ type Storage struct {
 
 	IsDebug bool
 
-	PointHooks  map[uint][]HookPointFunc
 	ShieldHooks map[uint][]HookShieldFunc
 
 	Shields map[string]*Shield
@@ -49,6 +52,22 @@ func (s *Storage) Debug(d ...bool) {
 	}
 }
 
+func DebugAct() {
+	// log.Printf("AddPoint: %d\n", AddPoint)
+	// log.Printf("AddGroup: %d\n", AddGroup)
+	// log.Printf("DelPoint: %d\n", DelPoint)
+	// log.Printf("DelGroup: %d\n", DelGroup)
+	// log.Printf("GetPoint: %d\n", GetPoint)
+	// log.Printf("GetGroup: %d\n", GetGroup)
+	// log.Printf("AllPoints: %d\n", AllPoints)
+	// log.Printf("Clean: %d\n", Clean)
+	// log.Printf("UpdateTime: %d\n", UpdateTime)
+	// log.Printf("UpdateTime: %d\n", UpdateTime)
+	// log.Printf("EachAct: %d\n", EachAct)
+	// log.Printf("DelHook: %d\n", DelHook)
+	// log.Printf("AddHook: %d\n", AddHook)
+}
+
 func New() *Storage {
 	s := &Storage{
 		Shields:   map[string]*Shield{},
@@ -57,17 +76,9 @@ func New() *Storage {
 		ShieldTTL: time.Minute,
 	}
 
-	s.PointHooks = map[uint][]HookPointFunc{}
 	s.ShieldHooks = map[uint][]HookShieldFunc{}
-
-	s.PointHooks[AllPoints] = []HookPointFunc{}
-	s.PointHooks[AddPoint] = []HookPointFunc{}
-	s.PointHooks[DelPoint] = []HookPointFunc{}
-	s.PointHooks[GetPoint] = []HookPointFunc{}
-
 	s.ShieldHooks[AllPoints] = []HookShieldFunc{}
 	s.ShieldHooks[AddGroup] = []HookShieldFunc{}
-	s.ShieldHooks[DelGroup] = []HookShieldFunc{}
 	s.ShieldHooks[GetGroup] = []HookShieldFunc{}
 
 	go s._start()
@@ -137,25 +148,29 @@ func (s *Storage) OneAct(mes *Message) {
 	}
 
 	switch mes.Action {
-	case AddPoint, DelPoint, GetPoint, AllPoints:
+	case AddPoint, AllPoints, GetPoint, EachAct, DelPoint,
+		UpdateTime, DelHook, AddHook:
 
-		shield, find := s._getShield(mes)
-
+		shield, find := s._getShield(mes.ShieldID)
 		if find {
-			s._pointHookExe(mes.Action, shield, mes)
 			shield.In <- mes
+		} else {
+			mes.Result = NotFoundShield
+			mes.Out <- mes
 		}
 
 	case GetGroup:
 
-		shield, find := s._getShield(mes)
+		shield, find := s._getShield(mes.ShieldID)
 
 		if find {
-			mes.Body = shield.Body
-			mes.Result = Success
+			mes.Result, mes.Body = s._shieldHookExe(GetGroup, shield)
 			mes.Out <- mes
 
 			shield.In <- newMessage(UpdateTime, "", "", "")
+		} else {
+			mes.Result = NotFoundShield
+			mes.Out <- mes
 		}
 
 	case AddGroup:
